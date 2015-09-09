@@ -71,6 +71,39 @@ for index,eigenvalue in enumerate(eigenvalues):
     numEffectiveEigenvalues = index+1
     break
 
+V = numpy.matrix( numpy.zeros((n,numEffectiveEigenvalues)) )
 for i in range(numEffectiveEigenvalues):
-  plt.imshow((A*eigenvectors[:,i]).reshape((x,y)),cmap=plt.cm.Greys_r)
+  V[:,i] = A*eigenvectors[:,i]
+
+#for i in range(numEffectiveEigenvalues):
+#  plt.imshow(V[:,i].reshape((x,y)),cmap=plt.cm.Greys_r)
+#  plt.show()
+
+#
+# Transform remaining images into "face space"
+#
+
+remainingImages = list()
+
+for name in filenames:
+  if name not in trainingImageNames:
+    remainingImages.append( scipy.misc.imread(name) )
+
+remainingImages = [ image - meanFace for image in remainingImages ]
+
+for image in remainingImages:
+  weights = list()
+
+  for i in range(numEffectiveEigenvalues):
+    weights.append( (V[:,i].transpose() * image.reshape((n,1))).tolist()[0][0] )
+
+  reconstruction = numpy.matrix( numpy.zeros((n,1)) )
+  for i,w in enumerate(weights):
+    reconstruction += w*V[:,i]
+
+  f = plt.figure()
+  f.add_subplot(1, 2, 1)
+  plt.imshow(reconstruction.reshape((x,y)),cmap=plt.cm.Greys_r)
+  f.add_subplot(1, 2, 2)
+  plt.imshow(image.reshape((x,y)),cmap=plt.cm.Greys_r)
   plt.show()
