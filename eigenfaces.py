@@ -2,17 +2,31 @@
 
 import matplotlib.pyplot as plt
 
+import argparse
 import numpy
 import os
 import random
 import scipy.misc
 
-facesDirectory   = "Data"
-numTrainingFaces = 40
+parser = argparse.ArgumentParser(description="Eigenface reconstruction demonstration")
+parser.add_argument("data",       metavar="DATA", type=str,   help="Data directory")
+parser.add_argument("n",          metavar="N",    type=int,   help="Number of training images", default=50)
+parser.add_argument("--variance",                 type=float, help="Desired proportion of variance", default = 0.95)
+
+arguments = parser.parse_args()
+
+dataDirectory    = arguments.data
+numTrainingFaces = arguments.n
+variance         = arguments.variance
+
+if variance > 1.0:
+  variance = 1.0
+elif variance < 0.0:
+  variance = 0.0
 
 def enumerateImagePaths(root):
   filenames = list()
-  for root, _, files in os.walk(facesDirectory):
+  for root, _, files in os.walk(dataDirectory):
     path = root.split('/')
     for f in files:
       n, ext = os.path.splitext(f)
@@ -20,7 +34,7 @@ def enumerateImagePaths(root):
         filenames.append(root+"/"+f)
   return filenames
 
-filenames          = enumerateImagePaths(facesDirectory)
+filenames          = enumerateImagePaths(dataDirectory)
 trainingImageNames = random.sample(filenames, numTrainingFaces)
 
 #
@@ -66,8 +80,8 @@ numEffectiveEigenvalues = 0
 
 for index,eigenvalue in enumerate(eigenvalues):
   partialSum += eigenvalue
-  if partialSum / eigenvalueSum > 0.95:
-    print("Reached 95% explained variance with", index+1 , "eigenvalues")
+  if partialSum / eigenvalueSum >= variance:
+    print("Reached", variance * 100, "%", "explained variance with", index+1 , "eigenvalues")
     numEffectiveEigenvalues = index+1
     break
 
