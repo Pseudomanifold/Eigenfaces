@@ -3,6 +3,7 @@
 import matplotlib.pyplot as plt
 
 import argparse
+import imghdr
 import numpy
 import os
 import random
@@ -29,9 +30,9 @@ def enumerateImagePaths(root):
   for root, _, files in os.walk(dataDirectory):
     path = root.split('/')
     for f in files:
-      n, ext = os.path.splitext(f)
-      if len(ext) == 4:
-        filenames.append(root+"/"+f)
+      filename = os.path.join(root, f)
+      if imghdr.what(filename):
+        filenames.append(filename)
   return filenames
 
 filenames          = enumerateImagePaths(dataDirectory)
